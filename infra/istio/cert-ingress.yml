@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ingress-cert
+  namespace: istio-system
+spec:
+  secretName: ingress-cert
+  issuerRef:
+    name: cloudflare-issuer
+    kind: ClusterIssuer
+  commonName: dev.alphvlabs.com # ${DOMAIN_NAME}
+  dnsNames:
+  - dev.alphvlabs.com
+  #- ${DOMAIN_NAME}

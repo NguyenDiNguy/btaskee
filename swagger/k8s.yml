@@ -1,0 +1,113 @@
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: swagger
+  labels:
+    app: swagger
+    service: swagger
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 8080         
+  selector:
+    app: swagger
+    
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: account-swagger
+  labels:
+    account: swagger
+imagePullSecrets:
+- name: gitlab-pull-secret   
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: virtual-swagger
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - gateway-route
+  http:
+  - match:                          
+    - uri:
+        prefix: /swagger
+    - uri:
+        prefix: /swagger 
+      headers:
+        content-type:
+          exact: application/json
+    route:
+    - destination:
+        host: swagger
+        port:
+          number: 8080
+    corsPolicy:
+      allowOrigin:
+      - "*"
+      allowMethods:
+      - OPTIONS
+      - GET
+      - POST
+      - PUT
+      allowCredentials: true
+      allowHeaders:
+      - "*"         
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swagger
+  labels:
+    app: swagger
+    version: v1
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0   
+  selector:
+    matchLabels:
+      app: swagger
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: swagger
+        version: v1     
+#      annotations:
+#        sidecar.istio.io/inject: "false"               
+    spec:
+      serviceAccountName: account-swagger
+      containers:
+      - name: swagger
+        image: payment-gateway-system/swagger:latest
+        imagePullPolicy: IfNotPresent
+        # resources:
+        #   limits:
+        #     memory: 1000Mi
+        #     cpu: 1 // 1 core
+        #   requests:
+        #     memory: 500Mi
+        #     cpu: 100m // default = 100m = 0.1 core             
+        ports:
+        - containerPort: 8080
+          name: http-web                        
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace                
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP

@@ -1,0 +1,292 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "services/booking/proto/booking.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Booking"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/booking/accept_task/{taskId}": {
+      "post": {
+        "operationId": "Booking_AcceptTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/bookingAcceptTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BookingAcceptTaskBody"
+            }
+          }
+        ],
+        "tags": [
+          "Booking"
+        ]
+      }
+    },
+    "/booking/confirm_tasker": {
+      "post": {
+        "operationId": "Booking_ConfirmTasker",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/bookingConfirmTaskerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/bookingConfirmTaskerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Booking"
+        ]
+      }
+    },
+    "/booking/create_task": {
+      "post": {
+        "operationId": "Booking_CreateTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/bookingCreateTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/bookingCreateTaskRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Booking"
+        ]
+      }
+    },
+    "/booking/get_task/{taskId}": {
+      "get": {
+        "operationId": "Booking_GetTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/bookingGetTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Booking"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "BookingAcceptTaskBody": {
+      "type": "object"
+    },
+    "bookingAcceptTaskResponse": {
+      "type": "object",
+      "properties": {
+        "isSuccess": {
+          "type": "boolean"
+        }
+      }
+    },
+    "bookingConfirmTaskerRequest": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "taskerId": {
+          "type": "string"
+        }
+      }
+    },
+    "bookingConfirmTaskerResponse": {
+      "type": "object",
+      "properties": {
+        "isSuccess": {
+          "type": "boolean"
+        }
+      }
+    },
+    "bookingCreateTaskRequest": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "type": "string"
+        }
+      }
+    },
+    "bookingCreateTaskResponse": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "$ref": "#/definitions/taskTask"
+        }
+      }
+    },
+    "bookingGetTaskResponse": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "$ref": "#/definitions/taskTask"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "taskTask": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string",
+          "title": "@gotags: bson:\"uuid\""
+        },
+        "detail": {
+          "type": "string",
+          "title": "@gotags: bson:\"detail\""
+        },
+        "askerId": {
+          "type": "string",
+          "title": "@gotags: bson:\"asker_id\""
+        },
+        "acceptedTaskers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "@gotags: bson:\"accepted_tasker\""
+        },
+        "confirmedTasker": {
+          "type": "string",
+          "title": "@gotags: bson:\"confirmed_tasker\""
+        },
+        "status": {
+          "$ref": "#/definitions/taskTaskStatus",
+          "title": "@gotags: bson:\"status\""
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "@gotags: bson:\"created_at\""
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "@gotags: bson:\"updated_at\""
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "@gotags: bson:\"deleted_at\""
+        }
+      }
+    },
+    "taskTaskStatus": {
+      "type": "string",
+      "enum": [
+        "UNSPECIFIED",
+        "PENDING",
+        "CONFIRMED"
+      ],
+      "default": "UNSPECIFIED"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+endpoint: 127.0.0.1:80
+port_http: 8080
+port_grpc: 9080
+db_uri: mongodb://admin:password@172.26.48.1:27017
+db_name: bTaskee
+redis_url: 172.26.48.1:6379
+redis_pass: 

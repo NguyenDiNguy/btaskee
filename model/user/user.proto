@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "btaskee/model/user";
+
+message User {
+    string uuid = 1; // @gotags: bson:"uuid"
+    string email = 2; // @gotags: bson:"email"
+    string hash_password = 3; // @gotags: bson:"hash_password"
+    int64 created_at = 6; // @gotags: bson:"created_at"
+    int64 updated_at = 7; // @gotags: bson:"updated_at"
+}

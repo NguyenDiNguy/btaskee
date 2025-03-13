@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package identity;
+
+option go_package = "services/identity/proto";
+
+import "model/user/user.proto";
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+
+service Identity {
+    rpc SignUp(SignUpRequest) returns (SignUpResponse) {
+        option (google.api.http) = {
+            post: "/identity/sign_up"
+            body: "*"
+        };
+    }
+
+    rpc SignIn(SignInRequest) returns (SignInResponse) {
+        option (google.api.http) = {
+            get: "/identity/sign_in"
+        };
+    }
+}
+
+message SignInRequest {
+    string email = 1 [(buf.validate.field).string.email = true];
+    string password = 2 [(buf.validate.field).string.min_len = 6];
+}
+
+message SignInResponse {
+    user.User user = 1;
+    string jwt = 2;
+}
+
+message SignUpRequest{
+    string email = 1 [(buf.validate.field).string.email = true];
+    string password = 2 [(buf.validate.field).string.min_len = 6];
+}
+
+message SignUpResponse {
+    bool isSuccess = 1;
+}

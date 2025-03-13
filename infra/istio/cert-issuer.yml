@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-api-token-secret
+  namespace: cert-manager
+type: Opaque
+stringData:
+  api-token: mwSW2Ka5xP2p5zZ3DXVvQNb6Odh3uZ689bM7W9-u  
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cloudflare-issuer
+spec:
+  acme:
+    email: dev@alphvlabs.com
+    server: 'https://acme-v02.api.letsencrypt.org/directory'
+    privateKeySecretRef:
+      name: cloudflare-issuer
+    solvers:
+    - dns01:
+        cloudflare:
+          email: tech@alphvlabs.com
+          apiTokenSecretRef:
+            name: cloudflare-api-token-secret
+            key: api-token
+      selector:
+        dnsZones:
+            - alphvlabs.com
+            - '*.alphvlabs.com'       

@@ -1,0 +1,183 @@
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity
+  labels:
+    app: identity
+    service: identity
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 8080
+  - name: grpc-web
+    port: 9080
+    targetPort: 9080                
+  selector:
+    app: identity
+    
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: account-identity
+  labels:
+    account: identity
+imagePullSecrets:
+- name: gitlab-pull-secret    
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: virtual-identity
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - gateway-route
+  http:
+  - name: grpc
+    match:
+    - uri:
+        prefix: /identity
+      withoutHeaders:
+        content-type:
+          prefix: application/json
+    route:
+    - destination:
+        host: identity
+        port:
+          number: 9080
+    corsPolicy:
+      allowOrigins:
+      - exact: "*"
+      allowMethods:
+      - OPTIONS
+      - GET
+      - POST
+      - PUT
+      allowCredentials: true
+      allowHeaders:
+      - "*"
+  - name: http
+    match:
+    - uri:
+        prefix: /identity
+    route:
+    - destination:
+        host: identity
+        port:
+          number: 8080
+    corsPolicy:
+      allowOrigins:
+      - exact: "*"
+      allowMethods:
+      - OPTIONS
+      - GET
+      - POST
+      - PUT
+      allowCredentials: true
+      allowHeaders:
+      - "*"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity
+  labels:
+    app: identity
+    version: v1
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0   
+  selector:
+    matchLabels:
+      app: identity
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: identity
+        version: v1     
+#      annotations:
+#        sidecar.istio.io/inject: "false"        
+    spec:
+      serviceAccountName: account-identity
+      containers:
+      - name: identity
+        image: btaskee/identity:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: 1000Mi
+            cpu: 1 # 1 core
+          requests:
+            memory: 100Mi
+            cpu: 100m # default = 100m = 0.1 core        
+        ports:
+        - containerPort: 8080
+          name: http-web
+        - containerPort: 9080
+          name: grpc-web                             
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace                
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: PIN
+            value: "1234567890" # Only Local                              
+                
+--- # Auto Scaling
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: identity-scaling
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: identity
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 95
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 95
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 30
+      # policies:
+      # - type: Percent
+      #   value: 100
+      #   periodSeconds: 15
+    scaleUp:
+      stabilizationWindowSeconds: 500
+      # policies:
+      # - type: Percent
+      #   value: 100
+      #   periodSeconds: 15
+      # - type: Pods
+      #   value: 4
+      #   periodSeconds: 15
+      # selectPolicy: Max
