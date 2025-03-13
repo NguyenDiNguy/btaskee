@@ -17,6 +17,4 @@ plugins:
     opt: 
       - paths=source_relative
       - lang=go
-  - name: openapiv2
-    out: ./swagger/docs
   
